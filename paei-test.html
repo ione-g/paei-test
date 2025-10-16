@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PAEI Test — 12 Blocks</title>
+  <style>
+    :root {
+      --card-bg: #fff;
+      --page-bg: #f6f7fb;
+      --accent: #f7b500;
+      --text: #111827;
+      --muted: #6b7280;
+    }
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: var(--page-bg); color: var(--text); margin: 24px; }
+    h1 { margin: 0 0 12px; font-size: 20px; }
+    p.lead { margin: 6px 0 18px; color: var(--muted); }
+    .container { max-width: 960px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 14px 16px; box-shadow: 0 6px 18px rgba(16,24,40,0.06); }
+    .block-title { font-weight: 600; margin-bottom: 8px; }
+    .trait { display:flex; align-items:center; gap:12px; padding:6px 0; border-bottom: 1px dashed rgba(0,0,0,0.04); }
+    .trait:last-child { border-bottom: none; }
+    .trait .label { flex:1; }
+    input[type="number"] { width:80px; padding:8px 10px; border-radius:8px; border:1px solid #e5e7eb; text-align:center; font-size:14px; }
+    .sum-row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+    .sum { font-weight:700; }
+    .hint { font-size:13px; color:var(--muted); }
+    .actions { margin-top:20px; display:flex; gap:12px; align-items:center; }
+    button.primary { background:linear-gradient(90deg,#2563eb,#4f46e5); color:white; border:none; padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:600; }
+    button.primary:disabled { opacity:0.55; cursor:not-allowed; }
+    .error { color:#b91c1c; font-size:13px; display:none; }
+    /* Modal */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; }
+    .modal { background:white; width:90%; max-width:520px; border-radius:12px; padding:18px; box-shadow:0 20px 40px rgba(2,6,23,0.3); }
+    .modal h3 { margin:0 0 6px; }
+    .result-list { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .result-pill { background:#f3f4f6; padding:10px 12px; border-radius:10px; font-weight:700; min-width:90px; text-align:center; }
+    .close-btn { margin-top:12px; padding:10px 12px; border-radius:8px; border:1px solid #e5e7eb; cursor:pointer; }
+    footer.small { margin-top:24px; color:var(--muted); font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PAEI Test — Розподіл 10 балів на блок</h1>
+    <p class="lead">У кожному блоці розподіліть **рівно 10 балів** між чотирма рисами. Поле автоматично не дозволить перевищити 10. Натисніть «Завершити» щоб побачити підсумки (вспливаюче вікно).</p>
+
+    <div id="blocks" class="grid"></div>
+
+    <div class="actions">
+      <div class="hint">Пам'ятка: у кожному блоці сума має бути <strong>10</strong>.</div>
+      <div style="flex:1"></div>
+      <button id="submitAll" class="primary">Завершити тест</button>
+    </div>
+
+    <div id="globalError" class="error">Будь ласка, виправте блоки з помилками (сума має дорівнювати 10).</div>
+
+    <footer class="small">
+      Хочете опублікувати цей файл — завантажте його на GitHub Pages або Netlify. (Інструкції внизу.)
+    </footer>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalBack" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal" role="document">
+      <h3>Результати тесту</h3>
+      <p class="hint">Підсумкові бали за ролями (А -> P, Б -> A, В -> E, Г -> I):</p>
+      <div id="results" class="result-list"></div>
+      <button id="closeModal" class="close-btn">Закрити</button>
+    </div>
+  </div>
+
+<script>
+/* ========== Data: 12 blocks with 4 traits each (use your provided labels) ========== */
+const blocksData = [
+  ["А Залучений", "Б Сумнівний", "В Яскравий", "Г Чуйний"],           // 1
+  ["А Прямолінійний", "Б Аналізуючий", "В Харизматичний", "Г Чуттєвий"], // 2
+  ["А Роблячий", "Б Споглядаючий", "В Провокуючий", "Г Співчувальний"], // 3
+  ["А Що усвідомлює", "Б Оцінюючий", "В Що йде на ризик", "Г Доброзичливий"], //4
+  ["А Результативний", "Б Логічний", "В Задає питання", "Г Інтуїтивний"], //5
+  ["А Завзятий", "Б Консервативний", "В Радикальний", "Г Товариський"], //6
+  ["А Активний", "Б Споглядаючий", "В Абстрактний", "Г Взаємодіючий"], //7
+  ["А Прагматичний", "Б Розмірковуючий", "В Дивится в майбутнє", "Г Теплий"], //8
+  ["А Переможець", "Б Точний", "В Концептуальний", "Г Що прагне консенсусу"], //9
+  ["А Раціональний", "Б Стриманий", "В Генеруючий ідєї", "Г Обізнаний"], //10
+  ["А Діловий", "Б Акуратний", "В Яскравий", "Г Приємний"], //11
+  ["А Реалістичний", "Б Обережний", "В Мрійник", "Г Що обїєднує"] //12
+];
+
+/* Mapping letters to roles:
+   А -> P (Producer)
+   Б -> A (Administrator)
+   В -> E (Entrepreneur)
+   Г -> I (Integrator)
+*/
+const letterToRole = { A: 'P', B: 'A', V: 'E', G: 'I' };
+
+/* We will treat the item prefixes "А","Б","В","Г" as the letter keys.
+   In blocksData items we have strings like "А Залучений" — we will extract the first letter.
+*/
+
+const blocksContainer = document.getElementById('blocks');
+
+function createBlock(index, labels) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const title = document.createElement('div');
+  title.className = 'block-title';
+  title.textContent = `Блок ${index + 1}`;
+  card.appendChild(title);
+
+  const form = document.createElement('div');
+  form.className = 'block-form';
+  form.dataset.blockIndex = index;
+
+  labels.forEach((lbl, i) => {
+    const tr = document.createElement('div');
+    tr.className = 'trait';
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = lbl;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = 0;
+    input.max = 10;
+    input.step = 1;
+    input.value = 0;
+    input.dataset.variant = lbl.trim().charAt(0); // first char like "А" or "Б"
+    input.title = '0–10, integer. Sum of the four must be 10.';
+
+    tr.appendChild(label);
+    tr.appendChild(input);
+    form.appendChild(tr);
+  });
+
+  const sumRow = document.createElement('div');
+  sumRow.className = 'sum-row';
+  const sumText = document.createElement('div');
+  sumText.className = 'sum';
+  sumText.innerHTML = `Сума: <span class="sum-val">0</span> / 10`;
+  const hint = document.createElement('div');
+  hint.className = 'hint';
+  hint.textContent = 'Кожна риса: 0–10 (загальна сума повинна бути 10)';
+  sumRow.appendChild(sumText);
+  sumRow.appendChild(hint);
+
+  const blockError = document.createElement('div');
+  blockError.className = 'error';
+  blockError.textContent = 'Сума блоку має дорівнювати 10.';
+
+  card.appendChild(form);
+  card.appendChild(sumRow);
+  card.appendChild(blockError);
+
+  // Attach listeners for inputs
+  const inputs = form.querySelectorAll('input[type="number"]');
+  inputs.forEach(inp => {
+    inp.addEventListener('input', (e) => handleInputChange(e, form, sumRow, blockError));
+    inp.addEventListener('blur', () => sanitizeInputs(form, sumRow, blockError));
+  });
+
+  return card;
+}
+
+function handleInputChange(event, form, sumRow, blockError) {
+  const changed = event.target;
+  // ensure integer
+  let val = parseInt(changed.value) || 0;
+  if (val < 0) val = 0;
+  if (val > 10) val = 10;
+  changed.value = val;
+
+  // compute sum
+  const inputs = Array.from(form.querySelectorAll('input[type="number"]'));
+  let sum = inputs.reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+
+  // If sum exceeds 10, reduce the current input by overflow (gives a smooth UX)
+  if (sum > 10) {
+    const overflow = sum - 10;
+    const newVal = Math.max(0, val - overflow);
+    changed.value = newVal;
+    sum = inputs.reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+  }
+
+  // Update sum display
+  sumRow.querySelector('.sum-val').textContent = sum;
+
+  // Show/hide block error
+  if (sum === 10) {
+    blockError.style.display = 'none';
+  } else {
+    blockError.style.display = 'block';
+  }
+}
+
+function sanitizeInputs(form, sumRow, blockError) {
+  // Make sure values are integers in allowed range and update sum/error
+  const inputs = Array.from(form.querySelectorAll('input[type="number"]'));
+  inputs.forEach(inp => {
+    let v = Math.round(parseFloat(inp.value) || 0);
+    if (v < 0) v = 0;
+    if (v > 10) v = 10;
+    inp.value = v;
+  });
+  const sum = inputs.reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+  sumRow.querySelector('.sum-val').textContent = sum;
+  blockError.style.display = (sum === 10 ? 'none' : 'block');
+}
+
+/* Render all blocks */
+blocksData.forEach((labels, idx) => {
+  blocksContainer.appendChild(createBlock(idx, labels));
+});
+
+/* Submit handling */
+const submitAll = document.getElementById('submitAll');
+const globalError = document.getElementById('globalError');
+const modalBack = document.getElementById('modalBack');
+const resultsDiv = document.getElementById('results');
+const closeModal = document.getElementById('closeModal');
+
+submitAll.addEventListener('click', () => {
+  // Validate all blocks
+  const cardForms = document.querySelectorAll('.block-form');
+  let allValid = true;
+  const totals = { P:0, A:0, E:0, I:0 }; // P, A, E, I
+
+  cardForms.forEach(form => {
+    const inputs = Array.from(form.querySelectorAll('input[type="number"]'));
+    const sum = inputs.reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+    if (sum !== 10) {
+      allValid = false;
+    } else {
+      // tally letter -> role
+      inputs.forEach(inp => {
+        const letter = inp.dataset.variant; // 'А' or 'Б' etc
+        // Normalize to latin key
+        const letterUpper = letter ? letter.toUpperCase() : '';
+        // Map Ukrainian letters to keys A,B,V,G
+        // We'll match by: 'А'->'A', 'Б'->'B', 'В'->'V', 'Г'->'G'
+        let key = null;
+        if (letterUpper === 'А') key = 'A';
+        else if (letterUpper === 'Б') key = 'B';
+        else if (letterUpper === 'В') key = 'V';
+        else if (letterUpper === 'Г') key = 'G';
+        const val = parseInt(inp.value) || 0;
+        if (key === 'A') totals.P += val;
+        if (key === 'B') totals.A += val;
+        if (key === 'V') totals.E += val;
+        if (key === 'G') totals.I += val;
+      });
+    }
+  });
+
+  if (!allValid) {
+    globalError.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  } else {
+    globalError.style.display = 'none';
+  }
+
+  // Show results in modal (popup)
+  resultsDiv.innerHTML = '';
+  const roleNames = { P: 'Producer (P)', A: 'Administrator (A)', E: 'Entrepreneur (E)', I: 'Integrator (I)' };
+  for (const r of ['P','A','E','I']) {
+    const pill = document.createElement('div');
+    pill.className = 'result-pill';
+    pill.innerHTML = `<div style="font-size:13px;color:var(--muted)">${roleNames[r]}</div><div style="font-size:18px;margin-top:6px">${totals[r]}</div>`;
+    resultsDiv.appendChild(pill);
+  }
+
+  // Optionally show percentages
+  const totalPoints = totals.P + totals.A + totals.E + totals.I;
+  const percLine = document.createElement('div');
+  percLine.style.marginTop = '12px';
+  percLine.style.color = 'var(--muted)';
+  percLine.textContent = `Усього балів: ${totalPoints} (макс можливе: ${blocksData.length * 10})`;
+  resultsDiv.appendChild(percLine);
+
+  modalBack.style.display = 'flex';
+});
+
+closeModal.addEventListener('click', () => {
+  modalBack.style.display = 'none';
+});
+
+/* Close modal by clicking outside content */
+modalBack.addEventListener('click', (e) => {
+  if (e.target === modalBack) modalBack.style.display = 'none';
+});
+
+</script>
+</body>
+</html>
