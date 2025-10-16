@@ -1,67 +1,303 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<title>PAEI Тест</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PAEI Тест — Material 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Material+Symbols+Rounded" rel="stylesheet">
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background:#f5f6fa;
+  /* ===== Material 3 – Tokens (спрощено) ===== */
+  :root{
+    --md-ref-palette-primary: 0, 104, 183;      /* #0068B7 */
+    --md-ref-palette-secondary: 98, 91, 113;
+    --md-ref-palette-tertiary: 125, 80, 150;
+    --md-ref-palette-neutral:  30, 30, 32;
+
+    /* Light scheme */
+    --md-sys-color-primary: rgb(0, 104, 183);
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: rgb(208, 229, 252);
+    --md-sys-color-on-primary-container: rgb(0, 30, 55);
+
+    --md-sys-color-secondary: rgb(98, 91, 113);
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: rgb(232, 226, 240);
+    --md-sys-color-on-secondary-container: rgb(30, 25, 39);
+
+    --md-sys-color-surface: #f9f9fb;
+    --md-sys-color-on-surface: #1c1b1f;
+    --md-sys-color-surface-variant: #e7e0ec;
+    --md-sys-color-outline: #7a757f;
+
+    --md-sys-elevation-1: 0 1px 2px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.08);
+    --md-sys-elevation-2: 0 2px 6px rgba(0,0,0,.14), 0 2px 4px rgba(0,0,0,.1);
+
+    --radius-l: 16px;
+    --radius-m: 12px;
+    --radius-s: 10px;
+
+    --spacing-1: 8px;
+    --spacing-2: 12px;
+    --spacing-3: 16px;
+    --spacing-4: 20px;
+    --spacing-5: 24px;
+    --spacing-6: 28px;
+
+    --font-family: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root{
+      --md-sys-color-primary: rgb(137, 204, 255);
+      --md-sys-color-on-primary: rgb(0, 53, 95);
+      --md-sys-color-primary-container: rgb(0, 78, 135);
+      --md-sys-color-on-primary-container: rgb(208, 229, 252);
+
+      --md-sys-color-secondary: rgb(203, 195, 218);
+      --md-sys-color-on-secondary: rgb(52, 47, 63);
+      --md-sys-color-secondary-container: rgb(75, 69, 87);
+      --md-sys-color-on-secondary-container: rgb(232, 226, 240);
+
+      --md-sys-color-surface: #111114;
+      --md-sys-color-on-surface: #e6e1e6;
+      --md-sys-color-surface-variant: #49454f;
+      --md-sys-color-outline: #948f99;
+
+      --md-sys-elevation-1: 0 1px 2px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.35);
+      --md-sys-elevation-2: 0 2px 8px rgba(0,0,0,.55), 0 4px 6px rgba(0,0,0,.45);
+    }
+  }
+
+  /* ===== Base ===== */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
     margin:0;
-    padding:20px;
+    background:var(--md-sys-color-surface);
+    color:var(--md-sys-color-on-surface);
+    font-family:var(--font-family);
+    line-height:1.45;
   }
-  .block {
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.1);
-    max-width:600px;
-    margin:20px auto;
+
+  /* ===== Top App Bar ===== */
+  .appbar{
+    position:sticky; top:0; z-index:10;
+    background:var(--md-sys-color-surface);
+    border-bottom:1px solid color-mix(in oklab, var(--md-sys-color-outline) 30%, transparent);
+    display:flex; align-items:center; gap:12px;
+    padding:12px 16px;
+    backdrop-filter:saturate(120%) blur(6px);
   }
-  .question { margin-bottom:20px; }
-  label { font-weight:bold; display:block; margin-bottom:4px; }
-  .options label { font-weight:normal; margin-right:10px; }
-  .sum { font-weight:bold; margin-top:10px; color:#333; text-align:right; }
-  .hidden { display:none; }
-  button {
-    background:#007bff;
-    color:white;
-    border:none;
-    border-radius:8px;
-    padding:10px 20px;
-    cursor:pointer;
-    font-size:16px;
-    margin-top:10px;
+  .appbar .logo{
+    width:40px; height:40px; border-radius:50%;
+    background:var(--md-sys-color-primary);
+    color:var(--md-sys-color-on-primary);
+    display:grid; place-items:center;
+    font-weight:700;
+    box-shadow:var(--md-sys-elevation-1);
   }
-  button:disabled {
-    background:#ccc;
-    cursor:not-allowed;
+  .appbar h1{
+    font-size:18px; font-weight:700; margin:0;
+    letter-spacing:.2px;
   }
-  .results {
-    max-width:600px;
-    background:white;
-    margin:30px auto;
-    padding:25px;
-    border-radius:12px;
-    text-align:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+
+  /* ===== Layout ===== */
+  .wrap{
+    max-width:760px; margin:20px auto; padding:0 16px 56px;
+  }
+
+  .card{
+    background:var(--md-sys-color-surface);
+    border:1px solid color-mix(in oklab, var(--md-sys-color-outline) 22%, transparent);
+    border-radius:var(--radius-l);
+    box-shadow:var(--md-sys-elevation-1);
+    padding:var(--spacing-5);
+    margin:var(--spacing-4) auto;
+  }
+
+  .headline{
+    margin:0 0 var(--spacing-2);
+    font-size:22px; font-weight:700;
+  }
+  .subtle{
+    color:var(--md-sys-color-outline);
+    font-size:14px; margin-bottom:var(--spacing-3);
+  }
+
+  /* ===== Progress ===== */
+  .progress{
+    height:6px; width:100%; background:color-mix(in oklab, var(--md-sys-color-surface-variant) 45%, transparent);
+    border-radius:999px; overflow:hidden; margin:var(--spacing-3) 0 var(--spacing-4);
+  }
+  .progress > div{
+    height:100%; width:0%;
+    background:var(--md-sys-color-primary);
+    transition:width .35s ease;
+  }
+
+  /* ===== Question group ===== */
+  .qgroup{
+    display:grid; gap:var(--spacing-4);
+  }
+
+  .question{
+    padding:var(--spacing-3);
+    border-radius:var(--radius-m);
+    border:1px solid color-mix(in oklab, var(--md-sys-color-outline) 18%, transparent);
+    background:color-mix(in oklab, var(--md-sys-color-surface) 92%, var(--md-sys-color-primary) 8%);
+  }
+
+  .qtitle{
+    font-weight:600; margin-bottom:var(--spacing-2);
+    display:flex; align-items:center; gap:8px;
+  }
+  .qtitle .chip{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:28px; height:28px; padding:0 8px;
+    border-radius:999px; font-size:12px; font-weight:700;
+    color:var(--md-sys-color-on-primary-container);
+    background:var(--md-sys-color-primary-container);
+  }
+
+  /* ===== Radio row (1–4) ===== */
+  .options{
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .opt{
+    position:relative;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 12px; border-radius:12px;
+    border:1px solid color-mix(in oklab, var(--md-sys-color-outline) 18%, transparent);
+    background:var(--md-sys-color-surface);
+    cursor:pointer; user-select:none;
+    transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{ box-shadow:var(--md-sys-elevation-1) }
+  .opt:active{ transform:scale(.99) }
+
+  .opt input{ position:absolute; inset:0; opacity:0; cursor:pointer }
+  .opt .bullet{
+    width:18px; height:18px; border-radius:50%;
+    border:2px solid var(--md-sys-color-outline);
+    display:inline-block; position:relative; flex:0 0 18px;
+  }
+  .opt input:checked + .bullet{
+    border-color:var(--md-sys-color-primary);
+  }
+  .opt input:checked + .bullet::after{
+    content:""; position:absolute; inset:3px;
+    border-radius:50%; background:var(--md-sys-color-primary);
+  }
+
+  .opt[data-disabled="true"]{
+    opacity:.45; cursor:not-allowed;
+  }
+
+  /* ===== Sum row ===== */
+  .sumrow{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:var(--spacing-2);
+    color:var(--md-sys-color-on-surface);
+    font-weight:600;
+  }
+  .sumhint{
+    color:var(--md-sys-color-outline); font-weight:500; font-size:13px;
+  }
+
+  /* ===== Buttons (Filled / Tonal) ===== */
+  .btns{ display:flex; gap:12px; justify-content:flex-end; margin-top:var(--spacing-4) }
+  .btn{
+    position:relative;
+    border:none; border-radius:14px; padding:12px 18px;
+    font-weight:700; letter-spacing:.2px;
+    display:inline-flex; align-items:center; gap:8px;
+    cursor:pointer; transition:filter .15s ease, transform .06s ease, box-shadow .15s ease;
+  }
+  .btn:active{ transform:translateY(1px) }
+
+  .btn-filled{
+    background:var(--md-sys-color-primary);
+    color:var(--md-sys-color-on-primary);
+    box-shadow:var(--md-sys-elevation-2);
+  }
+  .btn-filled:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none }
+
+  .btn-tonal{
+    background:var(--md-sys-color-secondary-container);
+    color:var(--md-sys-color-on-secondary-container);
+  }
+
+  /* Ripple */
+  .btn::after, .opt::after{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    background:color-mix(in oklab, var(--md-sys-color-on-surface) 10%, transparent);
+    opacity:0; transform:scale(.9);
+    transition:opacity .2s, transform .2s;
+    pointer-events:none;
+  }
+  .btn:active::after, .opt:active::after{ opacity:1; transform:scale(1) }
+
+  /* ===== Results ===== */
+  .results h2{ margin:4px 0 12px }
+  .scores{
+    display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr));
+    margin:16px 0 4px;
+  }
+  .score{
+    padding:14px; border-radius:14px;
+    border:1px solid color-mix(in oklab, var(--md-sys-color-outline) 18%, transparent);
+    background:var(--md-sys-color-surface);
+  }
+  .score b{ display:block; margin-bottom:6px }
+  .dominant{
+    margin-top:18px; font-size:18px; font-weight:800;
+    color:var(--md-sys-color-primary);
+  }
+
+  /* Footer tips */
+  .tips{
+    margin-top:12px; font-size:13px; color:var(--md-sys-color-outline)
   }
 </style>
 </head>
 <body>
+  <header class="appbar">
+    <div class="logo">P</div>
+    <h1>PAEI Тест</h1>
+  </header>
 
-<div id="container"></div>
+  <main class="wrap">
+    <section id="intro" class="card">
+      <h2 class="headline">Оцініть себе в кожному блоці</h2>
+      <p class="subtle">У кожному блоці є 4 твердження. Розподіліть <b>рівно 10 балів</b> між ними (кожному — від 1 до 4). Кнопка «Далі» стане активною, коли сума дорівнює 10.</p>
+      <div class="progress" aria-label="Прогрес"><div id="progressBar"></div></div>
+    </section>
 
-<div id="results" class="results hidden">
-  <h2>Результати</h2>
-  <p><b>A (P)</b>: <span id="scoreA">0</span></p>
-  <p><b>B (A)</b>: <span id="scoreB">0</span></p>
-  <p><b>C (E)</b>: <span id="scoreC">0</span></p>
-  <p><b>D (I)</b>: <span id="scoreD">0</span></p>
-  <h3 id="dominant"></h3>
-</div>
+    <div id="container"></div>
+
+    <section id="results" class="card results" hidden>
+      <h2>Результати</h2>
+      <div class="scores">
+        <div class="score"><b>A (P – Виконавець)</b><span id="scoreA">0</span></div>
+        <div class="score"><b>B (A – Адміністратор)</b><span id="scoreB">0</span></div>
+        <div class="score"><b>C (E – Підприємець)</b><span id="scoreC">0</span></div>
+        <div class="score"><b>D (I – Інтегратор)</b><span id="scoreD">0</span></div>
+      </div>
+      <div id="dominant" class="dominant"></div>
+      <div class="btns">
+        <button class="btn btn-tonal" id="restartBtn">
+          <span class="material-symbols-rounded">restart_alt</span> Почати заново
+        </button>
+        <button class="btn btn-filled" id="exportBtn">
+          <span class="material-symbols-rounded">ios_share</span> Експортувати JSON
+        </button>
+      </div>
+      <p class="tips">Порада: результати автоматично зберігаються локально — можна повернутися пізніше.</p>
+    </section>
+  </main>
 
 <script>
+/* ===== Дані ===== */
 const data = [
   ["А. Залучений", "Б. Сумнівний", "В. Яскравий", "Г. Чуйний"],
   ["А. Прямолінійний", "Б. Аналізуючий", "В. Харизматичний", "Г. Чуттєвий"],
@@ -78,131 +314,247 @@ const data = [
 ];
 
 const container = document.getElementById('container');
+const results = document.getElementById('results');
+const progressBar = document.getElementById('progressBar');
+
+const maxTotal = 10;
 let currentBlock = 0;
 
-// === Генеруємо всі блоки ===
-data.forEach((blockData, index) => {
-  const div = document.createElement('div');
-  div.classList.add('block');
-  if (index !== 0) div.classList.add('hidden');
-  div.id = `block${index}`;
+/* ===== Local Storage helpers ===== */
+const KEY = 'paei-m3-v1';
+const loadState = () => {
+  try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; }
+}
+const saveState = (obj) => localStorage.setItem(KEY, JSON.stringify(obj));
+const clearState = () => localStorage.removeItem(KEY);
 
-  blockData.forEach((text, i) => {
-    const qLetter = ['A','B','C','D'][i];
-    const qDiv = document.createElement('div');
-    qDiv.classList.add('question');
-    qDiv.dataset.q = qLetter;
+/* ===== UI builders ===== */
+function buildBlock(blockIndex){
+  const card = document.createElement('section');
+  card.className = 'card';
+  card.id = `block${blockIndex}`;
+  if(blockIndex !== 0) card.hidden = true;
 
-    const label = document.createElement('label');
-    label.textContent = text;
-    qDiv.appendChild(label);
+  const h = document.createElement('h3');
+  h.className = 'headline';
+  h.textContent = `Блок ${blockIndex+1} з ${data.length}`;
+  card.appendChild(h);
+
+  const hint = document.createElement('div');
+  hint.className = 'subtle';
+  hint.textContent = 'Оберіть значення 1–4 для кожного твердження.';
+  card.appendChild(hint);
+
+  const qwrap = document.createElement('div');
+  qwrap.className = 'qgroup';
+
+  const letters = ['A','B','C','D'];
+  data[blockIndex].forEach((text, i) => {
+    const q = document.createElement('div');
+    q.className = 'question';
+    q.dataset.q = letters[i];
+
+    const title = document.createElement('div');
+    title.className = 'qtitle';
+    title.innerHTML = `<span class="chip">${letters[i]}</span> <span>${text}</span>`;
+    q.appendChild(title);
 
     const opts = document.createElement('div');
-    opts.classList.add('options');
+    opts.className = 'options';
 
-    for (let val=1; val<=4; val++) {
-      const optLabel = document.createElement('label');
+    for(let val=1; val<=4; val++){
+      const label = document.createElement('label');
+      label.className = 'opt';
+      label.setAttribute('role','radio');
+      label.setAttribute('aria-label', `${val} бал(и)`);
+
       const input = document.createElement('input');
       input.type = 'radio';
-      input.name = `${index}_${qLetter}`;
+      input.name = `${blockIndex}_${letters[i]}`;
       input.value = val;
-      optLabel.appendChild(input);
-      optLabel.append(val);
-      opts.appendChild(optLabel);
+
+      const bullet = document.createElement('span');
+      bullet.className = 'bullet';
+
+      label.appendChild(input);
+      label.appendChild(bullet);
+      const txt = document.createElement('span');
+      txt.textContent = val;
+      label.appendChild(txt);
+
+      // enable/disable visual sync
+      input.addEventListener('change', ()=> updateAvailability(blockIndex));
+      label.addEventListener('click', ()=> {
+        if(label.dataset.disabled === 'true') { // prevent choose when disabled
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      });
+
+      opts.appendChild(label);
     }
-    qDiv.appendChild(opts);
-    div.appendChild(qDiv);
+    q.appendChild(opts);
+    qwrap.appendChild(q);
   });
 
-  const sum = document.createElement('div');
-  sum.classList.add('sum');
-  sum.innerHTML = `Сума: <span id="sum${index}">0</span> / 10`;
-  div.appendChild(sum);
+  card.appendChild(qwrap);
 
-  const btn = document.createElement('button');
-  btn.textContent = index === data.length - 1 ? "Завершити" : "Далі";
-  btn.disabled = true;
-  btn.addEventListener('click', () => nextBlock(index));
-  div.appendChild(btn);
+  const sumrow = document.createElement('div');
+  sumrow.className = 'sumrow';
+  sumrow.innerHTML = `
+    <span class="sumhint">Необхідно розподілити: 10 балів</span>
+    <span>Сума: <b><span id="sum${blockIndex}">0</span> / 10</b></span>
+  `;
+  card.appendChild(sumrow);
 
-  container.appendChild(div);
-});
+  const btns = document.createElement('div');
+  btns.className = 'btns';
 
-// === Логіка для кожного блоку ===
-const minPerQ = 1;
-const maxTotal = 10;
+  const back = document.createElement('button');
+  back.className = 'btn btn-tonal';
+  back.innerHTML = `<span class="material-symbols-rounded">arrow_back</span> Назад`;
+  back.disabled = (blockIndex === 0);
+  back.addEventListener('click', ()=> prevBlock(blockIndex));
+  btns.appendChild(back);
 
-function initBlock(index) {
-  const block = document.getElementById(`block${index}`);
-  const radios = block.querySelectorAll('input[type="radio"]');
-  const questions = ['A','B','C','D'];
+  const next = document.createElement('button');
+  next.className = 'btn btn-filled';
+  next.id = `nextBtn${blockIndex}`;
+  next.disabled = true;
+  next.innerHTML = blockIndex === data.length-1
+    ? `<span class="material-symbols-rounded">check_circle</span> Завершити`
+    : `<span class="material-symbols-rounded">arrow_forward</span> Далі`;
+  next.addEventListener('click', ()=> nextBlock(blockIndex));
+  btns.appendChild(next);
 
-  // за замовчуванням кожне питання має 1 бал
-  questions.forEach(q=>{
-    block.querySelector(`input[name="${index}_${q}"][value="1"]`).checked = true;
-  });
-  updateAvailability(index);
-
-  radios.forEach(r=>r.addEventListener('change',()=>updateAvailability(index)));
+  card.appendChild(btns);
+  container.appendChild(card);
 }
 
-function getCurrentValues(index) {
-  const block = document.getElementById(`block${index}`);
-  const questions = ['A','B','C','D'];
-  return questions.map(q=>{
-    const checked = block.querySelector(`input[name="${index}_${q}"]:checked`);
+function initAll(){
+  container.innerHTML = '';
+  for(let i=0;i<data.length;i++) buildBlock(i);
+
+  // відновлення стану, якщо є
+  const st = loadState();
+  if(st){
+    currentBlock = Math.min(st.currentBlock ?? 0, data.length-1);
+    Object.entries(st.answers || {}).forEach(([k,v])=>{
+      const inp = document.querySelector(`input[name="${k}"][value="${v}"]`);
+      if(inp){ inp.checked = true; }
+    });
+  }
+
+  for(let i=0;i<data.length;i++){
+    initBlock(i, i===currentBlock);
+  }
+  showBlock(currentBlock);
+  updateProgress();
+}
+
+function showBlock(index){
+  for(let i=0;i<data.length;i++){
+    const el = document.getElementById(`block${i}`);
+    if(!el) continue;
+    el.hidden = (i !== index);
+  }
+}
+
+function initBlock(index, autoscroll=false){
+  // за замовчуванням — 1 бал
+  ['A','B','C','D'].forEach(q=>{
+    const existed = document.querySelector(`input[name="${index}_${q}"]:checked`);
+    if(!existed){
+      const def = document.querySelector(`input[name="${index}_${q}"][value="1"]`);
+      if(def) def.checked = true;
+    }
+  });
+  updateAvailability(index);
+  if(autoscroll){
+    document.getElementById(`block${index}`)?.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function getValues(index){
+  return ['A','B','C','D'].map(q=>{
+    const checked = document.querySelector(`input[name="${index}_${q}"]:checked`);
     return checked ? parseInt(checked.value) : 0;
   });
 }
 
-function updateAvailability(index) {
-  const block = document.getElementById(`block${index}`);
-  const sumDisplay = document.getElementById(`sum${index}`);
-  const questions = ['A','B','C','D'];
-  const values = getCurrentValues(index);
+function updateAvailability(index){
+  const values = getValues(index);
   const total = values.reduce((a,b)=>a+b,0);
-  sumDisplay.textContent = total;
   const remaining = maxTotal - total;
 
-  questions.forEach((q,i)=>{
+  const sumDisplay = document.getElementById(`sum${index}`);
+  if(sumDisplay) sumDisplay.textContent = total;
+
+  ['A','B','C','D'].forEach((q, i)=>{
     const currentVal = values[i];
-    const inputs = block.querySelectorAll(`input[name="${index}_${q}"]`);
-    inputs.forEach(inp=>{
-      inp.disabled = false;
+    document.querySelectorAll(`input[name="${index}_${q}"]`).forEach(inp=>{
       const val = parseInt(inp.value);
-      if (val - currentVal > remaining) inp.disabled = true;
-      if (val <= currentVal) inp.disabled = false;
+      const label = inp.parentElement;
+      let disabled = false;
+
+      if (val - currentVal > remaining) disabled = true;
+      if (val <= currentVal) disabled = false;
+
+      inp.disabled = disabled;
+      label.dataset.disabled = disabled ? 'true' : 'false';
     });
   });
 
-  const btn = block.querySelector('button');
-  const allSet = values.every(v=>v>=1) && total == 10;
-  btn.disabled = !allSet;
+  const btn = document.getElementById(`nextBtn${index}`);
+  const allSet = values.every(v=>v>=1) && total === 10;
+  if(btn) btn.disabled = !allSet;
+
+  // save state
+  const answers = {};
+  document.querySelectorAll('input[type="radio"]:checked').forEach(r=>{
+    answers[r.name] = parseInt(r.value);
+  });
+  saveState({ currentBlock, answers });
+
+  updateProgress();
 }
 
-function nextBlock(index) {
-  const current = document.getElementById(`block${index}`);
-  current.classList.add('hidden');
-
-  if (index + 1 < data.length) {
-    const next = document.getElementById(`block${index+1}`);
-    next.classList.remove('hidden');
-    initBlock(index+1);
+function nextBlock(index){
+  if(index + 1 < data.length){
+    currentBlock = index + 1;
+    saveState({ ...loadState(), currentBlock });
+    showBlock(currentBlock);
+    initBlock(currentBlock, true);
   } else {
     showResults();
   }
+  updateProgress();
 }
 
-function showResults() {
-  container.classList.add('hidden');
-  const results = document.getElementById('results');
-  results.classList.remove('hidden');
+function prevBlock(index){
+  if(index - 1 >= 0){
+    currentBlock = index - 1;
+    saveState({ ...loadState(), currentBlock });
+    showBlock(currentBlock);
+    initBlock(currentBlock, true);
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const percent = ((currentBlock) / (data.length)) * 100;
+  progressBar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+}
+
+function showResults(){
+  document.getElementById('intro').hidden = true;
+  container.hidden = true;
+  results.hidden = false;
 
   const totals = [0,0,0,0]; // A,B,C,D
-  const allRadios = document.querySelectorAll('input[type="radio"]:checked');
-  allRadios.forEach(r=>{
-    const parts = r.name.split('_')[1];
-    const idx = ['A','B','C','D'].indexOf(parts);
+  document.querySelectorAll('input[type="radio"]:checked').forEach(r=>{
+    const letter = r.name.split('_')[1]; // A|B|C|D
+    const idx = ['A','B','C','D'].indexOf(letter);
     totals[idx] += parseInt(r.value);
   });
 
@@ -216,8 +568,42 @@ function showResults() {
   document.getElementById('dominant').textContent = `Домінантна роль: ${labels[totals.indexOf(maxVal)]}`;
 }
 
-// ініціалізація першого блоку
-initBlock(0);
+/* ===== Export / Restart ===== */
+document.getElementById('exportBtn')?.addEventListener('click', ()=>{
+  const exportData = {
+    totals: {
+      A: parseInt(document.getElementById('scoreA').textContent || 0),
+      B: parseInt(document.getElementById('scoreB').textContent || 0),
+      C: parseInt(document.getElementById('scoreC').textContent || 0),
+      D: parseInt(document.getElementById('scoreD').textContent || 0),
+    },
+    answers: (()=>{
+      const obj={};
+      document.querySelectorAll('input[type="radio"]:checked').forEach(r=>{
+        obj[r.name]=parseInt(r.value);
+      });
+      return obj;
+    })()
+  };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'paei-results.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('restartBtn')?.addEventListener('click', ()=>{
+  clearState();
+  currentBlock = 0;
+  document.getElementById('intro').hidden = false;
+  container.hidden = false;
+  results.hidden = true;
+  initAll();
+});
+
+/* ===== Init ===== */
+initAll();
 </script>
 </body>
 </html>
