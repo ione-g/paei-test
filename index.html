@@ -2,109 +2,245 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>PAEI Block</title>
+<title>PAEI Тест</title>
 <style>
-  body { font-family: Arial; background:#fafafa; padding:20px; }
-  .block { background:white; padding:20px; border-radius:12px; box-shadow:0 0 8px rgba(0,0,0,0.1); max-width:400px; margin:auto; }
-  .question { margin-bottom:20px; }
-  label { font-weight:bold; display:block; margin-bottom:4px; }
-  .options label { font-weight:normal; margin-right:8px; }
-  .sum { font-weight:bold; margin-top:10px; color:#333; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f7f8fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+  .container {
+    width: 90%;
+    max-width: 700px;
+    background: #fff;
+    padding: 30px;
+    margin: 40px auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #2b2b2b;
+  }
+  .question {
+    margin-bottom: 20px;
+  }
+  label.title {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .options label {
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  .sum {
+    font-weight: bold;
+    color: #444;
+    margin-top: 10px;
+    text-align: right;
+  }
+  .hidden {
+    display: none;
+  }
+  .next-btn {
+    background: #2b7dfa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+  .next-btn:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+  }
+  .results {
+    text-align: center;
+  }
+  .results h3 {
+    margin-bottom: 10px;
+  }
+  .score-box {
+    background: #f0f3f8;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
 </style>
 </head>
 <body>
+<div class="container">
+  <h2>PAEI Тест</h2>
+  
+  <!-- Blocks -->
+  <div id="blocks"></div>
 
-<div class="block" id="block1">
-  <div class="question" data-q="A">
-    <label>А. Залучений</label>
-    <div class="options">
-      <label><input type="radio" name="A" value="1">1</label>
-      <label><input type="radio" name="A" value="2">2</label>
-      <label><input type="radio" name="A" value="3">3</label>
-      <label><input type="radio" name="A" value="4">4</label>
-    </div>
+  <!-- Results -->
+  <div id="results" class="hidden results">
+    <h3>Результати</h3>
+    <div class="score-box">A (P): <span id="scoreA">0</span></div>
+    <div class="score-box">B (A): <span id="scoreB">0</span></div>
+    <div class="score-box">C (E): <span id="scoreC">0</span></div>
+    <div class="score-box">D (I): <span id="scoreD">0</span></div>
+    <h3 id="dominant"></h3>
   </div>
-  <div class="question" data-q="B">
-    <label>Б. Сумнівний</label>
-    <div class="options">
-      <label><input type="radio" name="B" value="1">1</label>
-      <label><input type="radio" name="B" value="2">2</label>
-      <label><input type="radio" name="B" value="3">3</label>
-      <label><input type="radio" name="B" value="4">4</label>
-    </div>
-  </div>
-  <div class="question" data-q="C">
-    <label>В. Яскравий</label>
-    <div class="options">
-      <label><input type="radio" name="C" value="1">1</label>
-      <label><input type="radio" name="C" value="2">2</label>
-      <label><input type="radio" name="C" value="3">3</label>
-      <label><input type="radio" name="C" value="4">4</label>
-    </div>
-  </div>
-  <div class="question" data-q="D">
-    <label>Г. Чуйний</label>
-    <div class="options">
-      <label><input type="radio" name="D" value="1">1</label>
-      <label><input type="radio" name="D" value="2">2</label>
-      <label><input type="radio" name="D" value="3">3</label>
-      <label><input type="radio" name="D" value="4">4</label>
-    </div>
-  </div>
-  <div class="sum">Сума: <span id="sum1">0</span> / 10</div>
 </div>
 
 <script>
-const block = document.getElementById('block1');
-const sumDisplay = document.getElementById('sum1');
-const radios = block.querySelectorAll('input[type="radio"]');
-const questions = ['A','B','C','D'];
-const minPerQ = 1;
-const maxTotal = 10;
+// === TEST DATA ===
+const questionsData = [
+  [
+    ["А. Залучений", "Б. Сумнівний", "В. Яскравий", "Г. Чуйний"],
+    ["А. Прямолінійний", "Б. Аналізуючий", "В. Харизматичний", "Г. Чуттєвий"],
+    ["А. Роблячий", "Б. Споглядаючий", "В. Провокуючий", "Г. Співчувальний"],
+    ["А. Що усвідомлює", "Б. Оцінюючий", "В. Що йде на ризик", "Г. Доброзичливий"]
+  ],
+  [
+    ["А. Результативний", "Б. Логічний", "В. Задає питання", "Г. Інтуїтивний"],
+    ["А. Завзятий", "Б. Консервативний", "В. Радикальний", "Г. Товариський"],
+    ["А. Прагматичний", "Б. Розмірковуючий", "В. Дивиться в майбутнє", "Г. Теплий"],
+    ["А. Переможець", "Б. Точний", "В. Концептуальний", "Г. Що прагне консенсусу"]
+  ],
+  [
+    ["А. Раціональний", "Б. Стриманий", "В. Генеруючий ідеї", "Г. Обізнаний"],
+    ["А. Діловий", "Б. Акуратний", "В. Яскравий", "Г. Приємний"],
+    ["А. Реалістичний", "Б. Обережний", "В. Мрійник", "Г. Що об’єднує"]
+  ]
+];
 
-function getCurrentValues() {
-  return questions.map(q => {
-    const checked = block.querySelector(`input[name="${q}"]:checked`);
-    return checked ? parseInt(checked.value) : 0;
+// === GENERATE BLOCKS ===
+const blocksContainer = document.getElementById('blocks');
+
+questionsData.forEach((block, index) => {
+  const div = document.createElement('div');
+  div.classList.add('block');
+  if (index !== 0) div.classList.add('hidden');
+  div.dataset.index = index;
+
+  block.forEach((set, qIndex) => {
+    const qDiv = document.createElement('div');
+    qDiv.classList.add('question');
+    qDiv.dataset.q = `${index}-${qIndex}`;
+
+    set.forEach((labelText, optIndex) => {
+      const optDiv = document.createElement('div');
+      optDiv.classList.add('options');
+
+      const qLabel = document.createElement('label');
+      qLabel.classList.add('title');
+      qLabel.textContent = labelText;
+      optDiv.appendChild(qLabel);
+
+      for (let val = 1; val <= 4; val++) {
+        const rLabel = document.createElement('label');
+        const rInput = document.createElement('input');
+        rInput.type = 'radio';
+        rInput.name = `${index}-${qIndex}-${optIndex}`;
+        rInput.value = val;
+        rLabel.appendChild(rInput);
+        rLabel.append(val);
+        optDiv.appendChild(rLabel);
+      }
+      qDiv.appendChild(optDiv);
+    });
+
+    div.appendChild(qDiv);
   });
+
+  const sum = document.createElement('div');
+  sum.classList.add('sum');
+  sum.innerHTML = `Сума: <span id="sum-${index}">0</span> / 10`;
+  div.appendChild(sum);
+
+  const nextBtn = document.createElement('button');
+  nextBtn.classList.add('next-btn');
+  nextBtn.textContent = index === questionsData.length - 1 ? "Завершити" : "Далі";
+  nextBtn.disabled = true;
+  nextBtn.addEventListener('click', () => nextBlock(index));
+  div.appendChild(nextBtn);
+
+  blocksContainer.appendChild(div);
+});
+
+// === LOGIC ===
+const maxTotal = 10;
+const minPerQ = 1;
+
+function getValues(blockIndex) {
+  const radios = blocksContainer.querySelectorAll(`[data-index="${blockIndex}"] input[type="radio"]`);
+  const grouped = {};
+  radios.forEach(r => {
+    if (!grouped[r.name]) grouped[r.name] = 0;
+    if (r.checked) grouped[r.name] = parseInt(r.value);
+  });
+  return Object.values(grouped);
 }
 
-function updateAvailability() {
-  const values = getCurrentValues();
+function updateAvailability(blockIndex) {
+  const radios = blocksContainer.querySelectorAll(`[data-index="${blockIndex}"] input[type="radio"]`);
+  const values = getValues(blockIndex);
   const total = values.reduce((a,b)=>a+b,0);
-  sumDisplay.textContent = total;
-
+  document.getElementById(`sum-${blockIndex}`).textContent = total;
   const remaining = maxTotal - total;
 
-  questions.forEach((q,i)=>{
-    const currentVal = values[i];
-    const inputs = block.querySelectorAll(`input[name="${q}"]`);
-
-    inputs.forEach(inp=>{
-      inp.disabled = false;
-
-      const val = parseInt(inp.value);
-
-      // Ensure at least 1 point per question
-      if (currentVal === 0 && val === 0) inp.disabled = true;
-
-      // Disable if would exceed total
-      if (val - currentVal > remaining) inp.disabled = true;
-
-      // Always allow lowering selection
-      if (val <= currentVal) inp.disabled = false;
-    });
+  radios.forEach(r => {
+    const currentVal = parseInt(blocksContainer.querySelector(`input[name="${r.name}"]:checked`)?.value || 0);
+    const val = parseInt(r.value);
+    r.disabled = false;
+    if (val - currentVal > remaining) r.disabled = true;
+    if (val <= currentVal) r.disabled = false;
   });
+
+  const filled = values.length === 4 && values.every(v=>v>=1);
+  const btn = blocksContainer.querySelector(`[data-index="${blockIndex}"] .next-btn`);
+  btn.disabled = !(total <= 10 && filled);
 }
 
-// initialize with 1 point each
-questions.forEach(q=>{
-  block.querySelector(`input[name="${q}"][value="${minPerQ}"]`).checked = true;
+blocksContainer.addEventListener('change', e => {
+  const nameParts = e.target.name.split('-');
+  updateAvailability(nameParts[0]);
 });
-updateAvailability();
 
-radios.forEach(r=>r.addEventListener('change', updateAvailability));
+function nextBlock(currentIndex) {
+  const currentBlock = blocksContainer.querySelector(`[data-index="${currentIndex}"]`);
+  currentBlock.classList.add('hidden');
+  const nextBlock = blocksContainer.querySelector(`[data-index="${currentIndex+1}"]`);
+  if (nextBlock) nextBlock.classList.remove('hidden');
+  else showResults();
+}
+
+// === RESULTS ===
+function showResults() {
+  document.getElementById('blocks').classList.add('hidden');
+  const results = document.getElementById('results');
+  results.classList.remove('hidden');
+
+  let totals = [0,0,0,0];
+  const allRadios = document.querySelectorAll('input[type="radio"]:checked');
+  allRadios.forEach(r=>{
+    const parts = r.name.split('-');
+    const optIndex = parseInt(parts[2]);
+    totals[optIndex] += parseInt(r.value);
+  });
+
+  document.getElementById('scoreA').textContent = totals[0];
+  document.getElementById('scoreB').textContent = totals[1];
+  document.getElementById('scoreC').textContent = totals[2];
+  document.getElementById('scoreD').textContent = totals[3];
+
+  const max = Math.max(...totals);
+  const labels = ['A (P – Producer)','B (A – Administrator)','C (E – Entrepreneur)','D (I – Integrator)'];
+  document.getElementById('dominant').textContent = `Домінантна роль: ${labels[totals.indexOf(max)]}`;
+}
 </script>
-
 </body>
 </html>
