@@ -5,231 +5,205 @@
 <title>PAEI Тест</title>
 <style>
   body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f7f8fa;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background:#f5f6fa;
+    margin:0;
+    padding:20px;
   }
-  .container {
-    width: 90%;
-    max-width: 700px;
-    background: #fff;
-    padding: 30px;
-    margin: 40px auto;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  .block {
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    max-width:600px;
+    margin:20px auto;
   }
-  h2 {
-    text-align: center;
-    color: #2b2b2b;
+  .question { margin-bottom:20px; }
+  label { font-weight:bold; display:block; margin-bottom:4px; }
+  .options label { font-weight:normal; margin-right:10px; }
+  .sum { font-weight:bold; margin-top:10px; color:#333; text-align:right; }
+  .hidden { display:none; }
+  button {
+    background:#007bff;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:10px 20px;
+    cursor:pointer;
+    font-size:16px;
+    margin-top:10px;
   }
-  .question {
-    margin-bottom: 20px;
-  }
-  label.title {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-  }
-  .options label {
-    margin-right: 10px;
-    cursor: pointer;
-  }
-  .sum {
-    font-weight: bold;
-    color: #444;
-    margin-top: 10px;
-    text-align: right;
-  }
-  .hidden {
-    display: none;
-  }
-  .next-btn {
-    background: #2b7dfa;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 15px;
-  }
-  .next-btn:disabled {
-    background: #bbb;
-    cursor: not-allowed;
+  button:disabled {
+    background:#ccc;
+    cursor:not-allowed;
   }
   .results {
-    text-align: center;
-  }
-  .results h3 {
-    margin-bottom: 10px;
-  }
-  .score-box {
-    background: #f0f3f8;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    font-size: 18px;
+    max-width:600px;
+    background:white;
+    margin:30px auto;
+    padding:25px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
   }
 </style>
 </head>
 <body>
-<div class="container">
-  <h2>PAEI Тест</h2>
-  
-  <!-- Blocks -->
-  <div id="blocks"></div>
 
-  <!-- Results -->
-  <div id="results" class="hidden results">
-    <h3>Результати</h3>
-    <div class="score-box">A (P): <span id="scoreA">0</span></div>
-    <div class="score-box">B (A): <span id="scoreB">0</span></div>
-    <div class="score-box">C (E): <span id="scoreC">0</span></div>
-    <div class="score-box">D (I): <span id="scoreD">0</span></div>
-    <h3 id="dominant"></h3>
-  </div>
+<div id="container"></div>
+
+<div id="results" class="results hidden">
+  <h2>Результати</h2>
+  <p><b>A (P)</b>: <span id="scoreA">0</span></p>
+  <p><b>B (A)</b>: <span id="scoreB">0</span></p>
+  <p><b>C (E)</b>: <span id="scoreC">0</span></p>
+  <p><b>D (I)</b>: <span id="scoreD">0</span></p>
+  <h3 id="dominant"></h3>
 </div>
 
 <script>
-// === TEST DATA ===
-const questionsData = [
-  [
-    ["А. Залучений", "Б. Сумнівний", "В. Яскравий", "Г. Чуйний"],
-    ["А. Прямолінійний", "Б. Аналізуючий", "В. Харизматичний", "Г. Чуттєвий"],
-    ["А. Роблячий", "Б. Споглядаючий", "В. Провокуючий", "Г. Співчувальний"],
-    ["А. Що усвідомлює", "Б. Оцінюючий", "В. Що йде на ризик", "Г. Доброзичливий"]
-  ],
-  [
-    ["А. Результативний", "Б. Логічний", "В. Задає питання", "Г. Інтуїтивний"],
-    ["А. Завзятий", "Б. Консервативний", "В. Радикальний", "Г. Товариський"],
-    ["А. Прагматичний", "Б. Розмірковуючий", "В. Дивиться в майбутнє", "Г. Теплий"],
-    ["А. Переможець", "Б. Точний", "В. Концептуальний", "Г. Що прагне консенсусу"]
-  ],
-  [
-    ["А. Раціональний", "Б. Стриманий", "В. Генеруючий ідеї", "Г. Обізнаний"],
-    ["А. Діловий", "Б. Акуратний", "В. Яскравий", "Г. Приємний"],
-    ["А. Реалістичний", "Б. Обережний", "В. Мрійник", "Г. Що об’єднує"]
-  ]
+const data = [
+  ["А. Залучений", "Б. Сумнівний", "В. Яскравий", "Г. Чуйний"],
+  ["А. Прямолінійний", "Б. Аналізуючий", "В. Харизматичний", "Г. Чуттєвий"],
+  ["А. Роблячий", "Б. Споглядаючий", "В. Провокуючий", "Г. Співчувальний"],
+  ["А. Що усвідомлює", "Б. Оцінюючий", "В. Що йде на ризик", "Г. Доброзичливий"],
+  ["А. Результативний", "Б. Логічний", "В. Задає питання", "Г. Інтуїтивний"],
+  ["А. Завзятий", "Б. Консервативний", "В. Радикальний", "Г. Товариський"],
+  ["А. Активний", "Б. Споглядаючий", "В. Абстрактний", "Г. Взаємодіючий"],
+  ["А. Прагматичний", "Б. Розмірковуючий", "В. Дивиться в майбутнє", "Г. Теплий"],
+  ["А. Переможець", "Б. Точний", "В. Концептуальний", "Г. Що прагне консенсусу"],
+  ["А. Раціональний", "Б. Стриманий", "В. Генеруючий ідеї", "Г. Обізнаний"],
+  ["А. Діловий", "Б. Акуратний", "В. Яскравий", "Г. Приємний"],
+  ["А. Реалістичний", "Б. Обережний", "В. Мрійник", "Г. Що об’єднує"]
 ];
 
-// === GENERATE BLOCKS ===
-const blocksContainer = document.getElementById('blocks');
+const container = document.getElementById('container');
+let currentBlock = 0;
 
-questionsData.forEach((block, index) => {
+// === Генеруємо всі блоки ===
+data.forEach((blockData, index) => {
   const div = document.createElement('div');
   div.classList.add('block');
   if (index !== 0) div.classList.add('hidden');
-  div.dataset.index = index;
+  div.id = `block${index}`;
 
-  block.forEach((set, qIndex) => {
+  blockData.forEach((text, i) => {
+    const qLetter = ['A','B','C','D'][i];
     const qDiv = document.createElement('div');
     qDiv.classList.add('question');
-    qDiv.dataset.q = `${index}-${qIndex}`;
+    qDiv.dataset.q = qLetter;
 
-    set.forEach((labelText, optIndex) => {
-      const optDiv = document.createElement('div');
-      optDiv.classList.add('options');
+    const label = document.createElement('label');
+    label.textContent = text;
+    qDiv.appendChild(label);
 
-      const qLabel = document.createElement('label');
-      qLabel.classList.add('title');
-      qLabel.textContent = labelText;
-      optDiv.appendChild(qLabel);
+    const opts = document.createElement('div');
+    opts.classList.add('options');
 
-      for (let val = 1; val <= 4; val++) {
-        const rLabel = document.createElement('label');
-        const rInput = document.createElement('input');
-        rInput.type = 'radio';
-        rInput.name = `${index}-${qIndex}-${optIndex}`;
-        rInput.value = val;
-        rLabel.appendChild(rInput);
-        rLabel.append(val);
-        optDiv.appendChild(rLabel);
-      }
-      qDiv.appendChild(optDiv);
-    });
-
+    for (let val=1; val<=4; val++) {
+      const optLabel = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `${index}_${qLetter}`;
+      input.value = val;
+      optLabel.appendChild(input);
+      optLabel.append(val);
+      opts.appendChild(optLabel);
+    }
+    qDiv.appendChild(opts);
     div.appendChild(qDiv);
   });
 
   const sum = document.createElement('div');
   sum.classList.add('sum');
-  sum.innerHTML = `Сума: <span id="sum-${index}">0</span> / 10`;
+  sum.innerHTML = `Сума: <span id="sum${index}">0</span> / 10`;
   div.appendChild(sum);
 
-  const nextBtn = document.createElement('button');
-  nextBtn.classList.add('next-btn');
-  nextBtn.textContent = index === questionsData.length - 1 ? "Завершити" : "Далі";
-  nextBtn.disabled = true;
-  nextBtn.addEventListener('click', () => nextBlock(index));
-  div.appendChild(nextBtn);
+  const btn = document.createElement('button');
+  btn.textContent = index === data.length - 1 ? "Завершити" : "Далі";
+  btn.disabled = true;
+  btn.addEventListener('click', () => nextBlock(index));
+  div.appendChild(btn);
 
-  blocksContainer.appendChild(div);
+  container.appendChild(div);
 });
 
-// === LOGIC ===
-const maxTotal = 10;
+// === Логіка для кожного блоку ===
 const minPerQ = 1;
+const maxTotal = 10;
 
-function getValues(blockIndex) {
-  const radios = blocksContainer.querySelectorAll(`[data-index="${blockIndex}"] input[type="radio"]`);
-  const grouped = {};
-  radios.forEach(r => {
-    if (!grouped[r.name]) grouped[r.name] = 0;
-    if (r.checked) grouped[r.name] = parseInt(r.value);
+function initBlock(index) {
+  const block = document.getElementById(`block${index}`);
+  const radios = block.querySelectorAll('input[type="radio"]');
+  const questions = ['A','B','C','D'];
+
+  // за замовчуванням кожне питання має 1 бал
+  questions.forEach(q=>{
+    block.querySelector(`input[name="${index}_${q}"][value="1"]`).checked = true;
   });
-  return Object.values(grouped);
+  updateAvailability(index);
+
+  radios.forEach(r=>r.addEventListener('change',()=>updateAvailability(index)));
 }
 
-function updateAvailability(blockIndex) {
-  const radios = blocksContainer.querySelectorAll(`[data-index="${blockIndex}"] input[type="radio"]`);
-  const values = getValues(blockIndex);
+function getCurrentValues(index) {
+  const block = document.getElementById(`block${index}`);
+  const questions = ['A','B','C','D'];
+  return questions.map(q=>{
+    const checked = block.querySelector(`input[name="${index}_${q}"]:checked`);
+    return checked ? parseInt(checked.value) : 0;
+  });
+}
+
+function updateAvailability(index) {
+  const block = document.getElementById(`block${index}`);
+  const sumDisplay = document.getElementById(`sum${index}`);
+  const questions = ['A','B','C','D'];
+  const values = getCurrentValues(index);
   const total = values.reduce((a,b)=>a+b,0);
-  document.getElementById(`sum-${blockIndex}`).textContent = total;
+  sumDisplay.textContent = total;
   const remaining = maxTotal - total;
 
-  radios.forEach(r => {
-    const currentVal = parseInt(blocksContainer.querySelector(`input[name="${r.name}"]:checked`)?.value || 0);
-    const val = parseInt(r.value);
-    r.disabled = false;
-    if (val - currentVal > remaining) r.disabled = true;
-    if (val <= currentVal) r.disabled = false;
+  questions.forEach((q,i)=>{
+    const currentVal = values[i];
+    const inputs = block.querySelectorAll(`input[name="${index}_${q}"]`);
+    inputs.forEach(inp=>{
+      inp.disabled = false;
+      const val = parseInt(inp.value);
+      if (val - currentVal > remaining) inp.disabled = true;
+      if (val <= currentVal) inp.disabled = false;
+    });
   });
 
-  const filled = values.length === 4 && values.every(v=>v>=1);
-  const btn = blocksContainer.querySelector(`[data-index="${blockIndex}"] .next-btn`);
-  btn.disabled = !(total <= 10 && filled);
+  const btn = block.querySelector('button');
+  const allSet = values.every(v=>v>=1) && total <= 10;
+  btn.disabled = !allSet;
 }
 
-blocksContainer.addEventListener('change', e => {
-  const nameParts = e.target.name.split('-');
-  updateAvailability(nameParts[0]);
-});
+function nextBlock(index) {
+  const current = document.getElementById(`block${index}`);
+  current.classList.add('hidden');
 
-function nextBlock(currentIndex) {
-  const currentBlock = blocksContainer.querySelector(`[data-index="${currentIndex}"]`);
-  currentBlock.classList.add('hidden');
-  const nextBlock = blocksContainer.querySelector(`[data-index="${currentIndex+1}"]`);
-  if (nextBlock) nextBlock.classList.remove('hidden');
-  else showResults();
+  if (index + 1 < data.length) {
+    const next = document.getElementById(`block${index+1}`);
+    next.classList.remove('hidden');
+    initBlock(index+1);
+  } else {
+    showResults();
+  }
 }
 
-// === RESULTS ===
 function showResults() {
-  document.getElementById('blocks').classList.add('hidden');
+  container.classList.add('hidden');
   const results = document.getElementById('results');
   results.classList.remove('hidden');
 
-  let totals = [0,0,0,0];
+  const totals = [0,0,0,0]; // A,B,C,D
   const allRadios = document.querySelectorAll('input[type="radio"]:checked');
   allRadios.forEach(r=>{
-    const parts = r.name.split('-');
-    const optIndex = parseInt(parts[2]);
-    totals[optIndex] += parseInt(r.value);
+    const parts = r.name.split('_')[1];
+    const idx = ['A','B','C','D'].indexOf(parts);
+    totals[idx] += parseInt(r.value);
   });
 
   document.getElementById('scoreA').textContent = totals[0];
@@ -237,10 +211,13 @@ function showResults() {
   document.getElementById('scoreC').textContent = totals[2];
   document.getElementById('scoreD').textContent = totals[3];
 
-  const max = Math.max(...totals);
-  const labels = ['A (P – Producer)','B (A – Administrator)','C (E – Entrepreneur)','D (I – Integrator)'];
-  document.getElementById('dominant').textContent = `Домінантна роль: ${labels[totals.indexOf(max)]}`;
+  const maxVal = Math.max(...totals);
+  const labels = ['A (P – Виконавець)','B (A – Адміністратор)','C (E – Підприємець)','D (I – Інтегратор)'];
+  document.getElementById('dominant').textContent = `Домінантна роль: ${labels[totals.indexOf(maxVal)]}`;
 }
+
+// ініціалізація першого блоку
+initBlock(0);
 </script>
 </body>
 </html>
