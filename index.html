@@ -2,154 +2,108 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAEI Тест</title>
+<title>PAEI Block</title>
 <style>
-  body {
-    font-family: "Segoe UI", sans-serif;
-    background: #f4f7fb;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
-  .container {
-    background: white;
-    padding: 20px 30px;
-    border-radius: 16px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    width: 90%;
-    max-width: 700px;
-  }
-  h2, h3 { text-align: center; }
-  .trait {
-    margin-bottom: 15px;
-    background: #f9fafc;
-    border-radius: 10px;
-    padding: 10px;
-  }
-  .trait label { margin-right: 5px; cursor: pointer; }
-  .progress { text-align: center; margin-bottom: 10px; }
-  .btn {
-    display: block;
-    margin: 10px auto;
-    padding: 8px 16px;
-    background: #0078d7;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .btn:disabled { background: #aaa; cursor: not-allowed; }
+  body { font-family: Arial; background:#fafafa; padding:20px; }
+  .block { background:white; padding:20px; border-radius:12px; box-shadow:0 0 8px rgba(0,0,0,0.1); max-width:400px; margin:auto; }
+  .question { margin-bottom:20px; }
+  label { font-weight:bold; display:block; margin-bottom:4px; }
+  .options label { font-weight:normal; margin-right:8px; }
+  .sum { font-weight:bold; margin-top:10px; color:#333; }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>PAEI Тест</h2>
-  <div id="progress" class="progress">Питання 1 з 12</div>
-  <form id="paeiForm"></form>
+<div class="block" id="block1">
+  <div class="question" data-q="A">
+    <label>А. Залучений</label>
+    <div class="options">
+      <label><input type="radio" name="A" value="1">1</label>
+      <label><input type="radio" name="A" value="2">2</label>
+      <label><input type="radio" name="A" value="3">3</label>
+      <label><input type="radio" name="A" value="4">4</label>
+    </div>
+  </div>
+  <div class="question" data-q="B">
+    <label>Б. Сумнівний</label>
+    <div class="options">
+      <label><input type="radio" name="B" value="1">1</label>
+      <label><input type="radio" name="B" value="2">2</label>
+      <label><input type="radio" name="B" value="3">3</label>
+      <label><input type="radio" name="B" value="4">4</label>
+    </div>
+  </div>
+  <div class="question" data-q="C">
+    <label>В. Яскравий</label>
+    <div class="options">
+      <label><input type="radio" name="C" value="1">1</label>
+      <label><input type="radio" name="C" value="2">2</label>
+      <label><input type="radio" name="C" value="3">3</label>
+      <label><input type="radio" name="C" value="4">4</label>
+    </div>
+  </div>
+  <div class="question" data-q="D">
+    <label>Г. Чуйний</label>
+    <div class="options">
+      <label><input type="radio" name="D" value="1">1</label>
+      <label><input type="radio" name="D" value="2">2</label>
+      <label><input type="radio" name="D" value="3">3</label>
+      <label><input type="radio" name="D" value="4">4</label>
+    </div>
+  </div>
+  <div class="sum">Сума: <span id="sum1">0</span> / 10</div>
 </div>
 
 <script>
-const questions = [
-  ["Залучений","Сумнівний","Яскравий","Чуйний"],
-  ["Прямолінійний","Аналізуючий","Харизматичний","Чуттєвий"],
-  ["Роблячий","Споглядаючий","Провокуючий","Співчувальний"],
-  ["Що усвідомлює","Оцінюючий","Що йде на ризик","Доброзичливий"],
-  ["Результативний","Логічний","Задає питання","Інтуїтивний"],
-  ["Завзятий","Консервативний","Радикальний","Товариський"],
-  ["Активний","Споглядаючий","Абстрактний","Взаємодіючий"],
-  ["Прагматичний","Розмірковуючий","Дивиться в майбутнє","Теплий"],
-  ["Переможець","Точний","Концептуальний","Що прагне консенсусу"],
-  ["Раціональний","Стриманий","Генеруючий ідеї","Обізнаний"],
-  ["Діловий","Акуратний","Яскравий","Приємний"],
-  ["Реалістичний","Обережний","Мрійник","Що об’єднує"]
-];
-const roles = ["P","A","E","I"];
-let current = 0;
-let scores = { P:0, A:0, E:0, I:0 };
+const block = document.getElementById('block1');
+const sumDisplay = document.getElementById('sum1');
+const radios = block.querySelectorAll('input[type="radio"]');
+const questions = ['A','B','C','D'];
+const minPerQ = 1;
+const maxTotal = 10;
 
-const form = document.getElementById("paeiForm");
-const progress = document.getElementById("progress");
-
-function renderQuestion(i) {
-  const q = questions[i];
-  form.innerHTML = `
-    <div class="question active">
-      <h3>${i+1}. Розподіліть 10 балів між 4 рисами (мінімум 1 бал на кожну):</h3>
-      ${q.map((text, j) => `
-        <div class="trait">
-          <strong>${["А","Б","В","Г"][j]}. ${text}</strong><br>
-          ${[1,2,3,4].map(val => `
-            <label><input type="radio" name="q${i}_${j}" value="${val}">${val}</label>
-          `).join("")}
-        </div>
-      `).join("")}
-      <div style="text-align:center;margin-top:10px;">
-        <button type="button" id="nextBtn" class="btn" disabled>Далі</button>
-      </div>
-    </div>
-  `;
-  progress.textContent = `Питання ${i+1} з ${questions.length}`;
-
-  const nextBtn = document.getElementById("nextBtn");
-
-  form.addEventListener("change", () => {
-    let sum = 0;
-    let filled = 0;
-
-    for (let t=0; t<4; t++) {
-      const checked = form.querySelector(`input[name="q${i}_${t}"]:checked`);
-      if (checked) {
-        sum += parseInt(checked.value);
-        filled++;
-      }
-    }
-
-    // check conditions
-    const valid = (sum === 10 && filled === 4);
-
-    // disable only those that would exceed 10
-    for (let t=0; t<4; t++) {
-      const radios = form.querySelectorAll(`input[name="q${i}_${t}"]`);
-      radios.forEach(r => {
-        const checked = form.querySelector(`input[name="q${i}_${t}"]:checked`);
-        let tempSum = sum;
-        if (checked && checked.value == r.value) tempSum -= parseInt(r.value); // simulate deselect
-        const newSum = tempSum + parseInt(r.value);
-        r.disabled = (newSum > 10);
-      });
-    }
-
-    nextBtn.disabled = !valid;
+function getCurrentValues() {
+  return questions.map(q => {
+    const checked = block.querySelector(`input[name="${q}"]:checked`);
+    return checked ? parseInt(checked.value) : 0;
   });
-
-  nextBtn.onclick = () => {
-    // tally scores
-    for (let j=0; j<4; j++) {
-      const checked = form.querySelector(`input[name="q${i}_${j}"]:checked`);
-      if (checked) scores[roles[j]] += parseInt(checked.value);
-    }
-
-    current++;
-    if (current < questions.length) renderQuestion(current);
-    else showResults();
-  };
 }
 
-function showResults() {
-  form.innerHTML = "";
-  progress.textContent = "Результат";
-  alert(`Ваш результат:
-P (Producer): ${scores.P}
-A (Administrator): ${scores.A}
-E (Entrepreneur): ${scores.E}
-I (Integrator): ${scores.I}`);
+function updateAvailability() {
+  const values = getCurrentValues();
+  const total = values.reduce((a,b)=>a+b,0);
+  sumDisplay.textContent = total;
+
+  const remaining = maxTotal - total;
+
+  questions.forEach((q,i)=>{
+    const currentVal = values[i];
+    const inputs = block.querySelectorAll(`input[name="${q}"]`);
+
+    inputs.forEach(inp=>{
+      inp.disabled = false;
+
+      const val = parseInt(inp.value);
+
+      // Ensure at least 1 point per question
+      if (currentVal === 0 && val === 0) inp.disabled = true;
+
+      // Disable if would exceed total
+      if (val - currentVal > remaining) inp.disabled = true;
+
+      // Always allow lowering selection
+      if (val <= currentVal) inp.disabled = false;
+    });
+  });
 }
 
-renderQuestion(0);
+// initialize with 1 point each
+questions.forEach(q=>{
+  block.querySelector(`input[name="${q}"][value="${minPerQ}"]`).checked = true;
+});
+updateAvailability();
+
+radios.forEach(r=>r.addEventListener('change', updateAvailability));
 </script>
 
 </body>
