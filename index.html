@@ -176,7 +176,7 @@ function updateAvailability(index) {
   });
 
   const btn = block.querySelector('button');
-  const allSet = values.every(v=>v>=1) && total <= 10;
+  const allSet = values.every(v=>v>=1) && total == 10;
   btn.disabled = !allSet;
 }
 
