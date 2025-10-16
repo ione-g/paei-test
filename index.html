@@ -7,7 +7,7 @@
 <style>
   body {
     font-family: "Segoe UI", sans-serif;
-    background: #f2f4f8;
+    background: #f4f7fb;
     color: #333;
     display: flex;
     justify-content: center;
@@ -16,13 +16,13 @@
   }
   .container {
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 0 12px rgba(0,0,0,0.1);
     padding: 20px 30px;
+    border-radius: 16px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     width: 90%;
-    max-width: 600px;
+    max-width: 700px;
   }
-  h2 {
+  h2, h3 {
     text-align: center;
   }
   .question {
@@ -31,24 +31,35 @@
   .question.active {
     display: block;
   }
-  label {
-    display: block;
-    margin: 10px 0;
-    padding: 8px 12px;
-    background: #f7f9fc;
+  .options {
+    margin-top: 10px;
+  }
+  .trait {
+    margin-bottom: 15px;
+    background: #f9fafc;
     border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
+    padding: 10px;
   }
-  label:hover {
-    background: #e6eefb;
-  }
-  input[type="radio"] {
-    margin-right: 10px;
+  .trait label {
+    margin-right: 5px;
   }
   .progress {
     text-align: center;
     margin-bottom: 10px;
+  }
+  .btn {
+    display: block;
+    margin: 10px auto;
+    padding: 8px 16px;
+    background: #0078d7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn:disabled {
+    background: #aaa;
+    cursor: not-allowed;
   }
 </style>
 </head>
@@ -56,11 +67,8 @@
 
 <div class="container">
   <h2>PAEI Тест</h2>
-  <div class="progress" id="progress">Питання 1 з 12</div>
-
-  <form id="paeiForm">
-    <!-- Questions -->
-  </form>
+  <div id="progress" class="progress">Питання 1 з 12</div>
+  <form id="paeiForm"></form>
 </div>
 
 <script>
@@ -78,55 +86,84 @@ const questions = [
   ["Діловий","Акуратний","Яскравий","Приємний"],
   ["Реалістичний","Обережний","Мрійник","Що об’єднує"]
 ];
-
-// A = P, Б = A, В = E, Г = I
 const roles = ["P","A","E","I"];
+let current = 0;
+let scores = { P:0, A:0, E:0, I:0 };
 
 const form = document.getElementById("paeiForm");
 const progress = document.getElementById("progress");
 
-let current = 0;
-let scores = { P:0, A:0, E:0, I:0 };
-
-// build form dynamically
-questions.forEach((q, i) => {
-  const div = document.createElement("div");
-  div.className = "question" + (i === 0 ? " active" : "");
-  div.innerHTML = `
-    <h3>${i+1}. Оберіть характеристику:</h3>
-    ${q.map((text, j) => `
-      <label>
-        <input type="radio" name="q${i}" value="${roles[j]}">
-        ${["А","Б","В","Г"][j]}. ${text}
-      </label>`).join("")}
+function renderQuestion(i) {
+  const q = questions[i];
+  form.innerHTML = `
+    <div class="question active">
+      <h3>${i+1}. Оберіть бали (до 10 в сумі):</h3>
+      <div class="options">
+        ${q.map((text, j) => `
+          <div class="trait">
+            <strong>${["А","Б","В","Г"][j]}. ${text}</strong><br>
+            ${[1,2,3,4].map(val => `
+              <label><input type="radio" name="q${i}_${j}" value="${val}">${val}</label>
+            `).join("")}
+          </div>
+        `).join("")}
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <button type="button" id="nextBtn" class="btn" disabled>Далі</button>
+      </div>
+    </div>
   `;
-  form.appendChild(div);
-});
+  progress.textContent = `Питання ${i+1} з ${questions.length}`;
 
-// handle selection
-form.addEventListener("change", e => {
-  if (!e.target.name.startsWith("q")) return;
-  const role = e.target.value;
-  scores[role] += 1;
-  const qDiv = e.target.closest(".question");
-  qDiv.classList.remove("active");
+  const nextBtn = document.getElementById("nextBtn");
+  const radios = form.querySelectorAll("input[type=radio]");
 
-  current++;
-  if (current < questions.length) {
-    const next = form.children[current];
-    next.classList.add("active");
-    progress.textContent = `Питання ${current+1} з ${questions.length}`;
-  } else {
-    progress.textContent = "Результат";
-    setTimeout(() => {
-      alert(`Ваш результат:
+  form.addEventListener("change", () => {
+    // group by each trait (4 per block)
+    let sum = 0;
+    for (let t=0; t<4; t++) {
+      const checked = form.querySelector(`input[name="q${i}_${t}"]:checked`);
+      if (checked) sum += parseInt(checked.value);
+    }
+
+    // disable unchecked radios if sum>=10
+    radios.forEach(r => {
+      const checked = form.querySelector(`input[name="${r.name}"]:checked`);
+      if (!r.checked && sum >= 10) r.disabled = true;
+      else r.disabled = false;
+    });
+
+    // enable next if exactly 10
+    nextBtn.disabled = (sum !== 10);
+  });
+
+  nextBtn.onclick = () => {
+    // tally scores
+    for (let j=0;j<4;j++){
+      const checked = form.querySelector(`input[name="q${i}_${j}"]:checked`);
+      if (checked) scores[roles[j]] += parseInt(checked.value);
+    }
+
+    current++;
+    if (current < questions.length) {
+      renderQuestion(current);
+    } else {
+      showResults();
+    }
+  };
+}
+
+function showResults() {
+  form.innerHTML = "";
+  progress.textContent = "Результат";
+  alert(`Ваш результат:
 P (Producer): ${scores.P}
 A (Administrator): ${scores.A}
 E (Entrepreneur): ${scores.E}
 I (Integrator): ${scores.I}`);
-    }, 200);
-  }
-});
+}
+
+renderQuestion(0);
 </script>
 
 </body>
